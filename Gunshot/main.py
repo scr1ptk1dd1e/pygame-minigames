@@ -20,7 +20,7 @@ pygame.display.set_caption("Gunshot")
 
 path = os.path.dirname(os.path.abspath(__file__))
 
-path_to_sound = path + '\\Assets\\Sounds\\'
+path_to_sound = os.path.join(path, 'Assets/Sounds/')
 shoot_sound = pygame.mixer.Sound(path_to_sound + 'shoot.wav')
 reload_sound  = pygame.mixer.Sound(path_to_sound + 'reload.wav')
 
@@ -29,7 +29,7 @@ score_blue = 0
 
 
 def load_image(name, colorkey=-1):
-    fullname = os.path.join(path, 'Assets\Sprites', name)
+    fullname = os.path.join(path, 'Assets/Sprites', name)
     image = pygame.image.load(fullname).convert()
     if colorkey is not None:
         if colorkey == -1:
