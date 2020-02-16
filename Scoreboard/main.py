@@ -3,10 +3,12 @@ import sqlite3
 import os
 
 path = os.path.dirname(os.path.abspath(__file__))
+path_to_db = os.path.join(path, '../Database/games.db')
+
 
 class Ui_MainWindow(object):
     def loadDino(self):
-        conn = sqlite3.connect(path + '\\Assets\\Database\\db.db')
+        conn = sqlite3.connect(path_to_db)
         query = 'SELECT * FROM Dino'
         res = conn.execute(query)
         self.table.setRowCount(0)
@@ -19,7 +21,7 @@ class Ui_MainWindow(object):
         conn.close()
 
     def loadGun(self):
-        conn = sqlite3.connect(path + '\\Assets\\Database\\db.db')
+        conn = sqlite3.connect(path_to_db)
         query = 'SELECT * FROM Gunshot'
         res = conn.execute(query)
         self.table.setRowCount(0)

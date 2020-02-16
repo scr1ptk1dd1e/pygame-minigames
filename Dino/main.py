@@ -2,6 +2,7 @@ import pygame
 import os
 import sys
 from random import randrange
+import sqlite3
 
 pygame.mixer.pre_init(44100, -16, 2, 512)
 pygame.init()
@@ -23,6 +24,15 @@ path_to_sound = os.path.join(path, 'Assets/Sounds/')
 jump_sound = pygame.mixer.Sound(path_to_sound + 'jump.wav')
 die_sound = pygame.mixer.Sound(path_to_sound + 'die.wav')
 
+path_to_db = os.path.join(path, '../Database/games.db')
+conn = sqlite3.connect(path_to_db)
+
+high_score = conn.execute('SELECT MAX(score) FROM dino').fetchall()[0][0]
+if not(high_score):
+    high_score = 0
+new_record = True
+
+
 def load_image(name, colorkey=-1):
     fullname = os.path.join(path, 'Assets/Sprites', name)
     image = pygame.image.load(fullname).convert()
@@ -34,8 +44,9 @@ def load_image(name, colorkey=-1):
         image = image.convert_alpha()
     return (image, image.get_rect())
 
+
 def load_sheet(sheet, rect, image_count):
-    tups = [(rect[0]+rect[2]*x, rect[1], rect[2], rect[3]) for x in range(image_count)]
+    tups = [(rect[0] + rect[2] * x, rect[1], rect[2], rect[3]) for x in range(image_count)]
     images = []
     for tup in tups:
         rect = pygame.Rect(tup)
@@ -45,6 +56,7 @@ def load_sheet(sheet, rect, image_count):
         image.set_colorkey(colorkey, pygame.RLEACCEL)
         images.append(image)
     return images, images[0].get_rect()
+
 
 class Ground():
     def __init__(self):
@@ -66,6 +78,7 @@ class Ground():
             self.rect.left = self.rect2.right
         if self.rect2.right < 0:
             self.rect2.left = self.rect.right
+
 
 class Dino(pygame.sprite.Sprite):
     def __init__(self):
@@ -124,6 +137,7 @@ class Dino(pygame.sprite.Sprite):
         self.image = self.images[3]
         die_sound.play()
 
+
 class Cactus(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__(cactus_group, all_sprites)
@@ -131,7 +145,7 @@ class Cactus(pygame.sprite.Sprite):
         self.speed = 5
         self.rect.bottom = HEIGHT
         self.rect.left = WIDTH + self.rect.width
-        self.image = self.images[randrange(0,3)]
+        self.image = self.images[randrange(0, 3)]
 
     def draw(self):
         screen.blit(self.image, self.rect)
@@ -140,6 +154,7 @@ class Cactus(pygame.sprite.Sprite):
         self.rect = self.rect.move((-1*self.speed, 0))
         if self.rect.right < 0:
             self.kill()
+
 
 class Scoreboard():
     def __init__(self):
@@ -174,6 +189,7 @@ ground = Ground()
 dino = Dino()
 scoreboard = Scoreboard()
 
+
 def restart():
     replay_image, replay_rect = load_image('replay.png')
     replay_rect.center = (WIDTH // 2, HEIGHT // 2)
@@ -183,6 +199,7 @@ def restart():
 
     screen.blit(replay_image, replay_rect)
     screen.blit(gameover_image, gameover_rect)
+
 
 def draw(cactus, dino, ground, scoreboard, score):
     cactus.draw()
@@ -202,13 +219,17 @@ while True:
     for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 dino.isDie = False
+                conn.close()
                 sys.exit()
             if dino.isDie and event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
+                    if score > high_score:
+                        high_score = int(score)
                     cactus.kill()
                     score = 0
                     speed = 6
                     dino.isDie = False
+                    new_record = True
 
     if not(dino.isDie):
         screen.fill(bg_col)
@@ -219,6 +240,10 @@ while True:
         draw(cactus, dino, ground, scoreboard, score)
 
         if pygame.sprite.collide_mask(dino, cactus):
+            if new_record:
+                new_record = False
+                conn.execute(f'INSERT INTO dino VALUES (NULL, {int(score)})')
+                conn.commit()
             dino.die()
             screen.fill(bg_col)
             draw(cactus, dino, ground, scoreboard, score)

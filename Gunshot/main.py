@@ -1,6 +1,7 @@
 import pygame
 import sys
 import os
+import sqlite3
 
 pygame.mixer.pre_init(44100, -16, 2, 1024)
 pygame.init()
@@ -22,10 +23,14 @@ path = os.path.dirname(os.path.abspath(__file__))
 
 path_to_sound = os.path.join(path, 'Assets/Sounds/')
 shoot_sound = pygame.mixer.Sound(path_to_sound + 'shoot.wav')
-reload_sound  = pygame.mixer.Sound(path_to_sound + 'reload.wav')
+reload_sound = pygame.mixer.Sound(path_to_sound + 'reload.wav')
 
 score_red = 0
 score_blue = 0
+
+path_to_db = os.path.join(path, '../Database/games.db')
+conn = sqlite3.connect(path_to_db)
+new_record = True
 
 
 def load_image(name, colorkey=-1):
@@ -214,11 +219,13 @@ text_blue = font.render(str(score_blue), 1, (0, 0, 255))
 while True:
     for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                conn.close()
                 sys.exit()
             elif stop:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_pos = event.pos
                     if restart_button.collidepoint(mouse_pos):
+                        new_record = True
                         stop = False
                         score_red = 0
                         score_blue = 0
@@ -270,6 +277,10 @@ while True:
         text_x = WIDTH//2-text.get_width()//2
         text_y = (HEIGHT//2-text.get_height()//2) - 50
         screen.blit(text, (text_x, text_y + 100))
+        if new_record:
+            new_record = False
+            conn.execute(f'INSERT INTO gunshot VALUES(NULL, {score_red}, {score_blue})')
+            conn.commit()
 
     pygame.display.flip()
     clock.tick(FPS)
