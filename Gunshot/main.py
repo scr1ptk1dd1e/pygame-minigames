@@ -279,7 +279,7 @@ while True:
         screen.blit(text, (text_x, text_y + 100))
         if new_record:
             new_record = False
-            conn.execute(f'INSERT INTO gunshot VALUES(NULL, {score_red}, {score_blue})')
+            conn.execute(f'INSERT INTO gunshot VALUES(NULL, {score_blue}, {score_red})')
             conn.commit()
 
     pygame.display.flip()

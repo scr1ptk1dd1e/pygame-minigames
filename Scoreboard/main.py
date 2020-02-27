@@ -84,7 +84,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Scoreboard"))
         self.table.setSortingEnabled(True)
         self.dino_btn.setText(_translate("MainWindow", "Dino"))
         self.gunshot_btn.setText(_translate("MainWindow", "Gunshot"))
